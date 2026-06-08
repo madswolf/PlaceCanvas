@@ -153,20 +153,27 @@ class GUI_layers_class {
 					class_extra += ' active';
 				}
 
-				html += '<div class="item ' + class_extra + '">';
+				var is_locked = value.locked === true;
+				html += '<div class="item ' + class_extra + (is_locked ? ' locked_layer' : '') + '">';
 				if (value.visible == true)
 					html += '	<button class="visibility visible trn" id="visibility" data-id="' + value.id + '" title="Hide"></button>';
 				else
 					html += '	<button class="visibility trn" id="visibility" data-id="' + value.id + '" title="Show"></button>';
-				html += '	<button class="delete trn" id="delete" data-id="' + value.id + '" title="Delete"></button>';
-				
+				if (!is_locked) {
+					html += '	<button class="delete trn" id="delete" data-id="' + value.id + '" title="Delete"></button>';
+				}
+
 				if(value.composition === 'source-atop'){
 					html += '	<button class="arrow_down" data-id="' + value.id + '" ></button>';
 				}
 
 				var layer_title = this.Helper.escapeHtml(value.name);
-				
-				html += '	<button class="layer_name" id="layer_name" data-id="' + value.id + '">' + layer_title + '</button>';
+
+				if (is_locked) {
+					html += '	<span class="layer_name locked_label">[locked] ' + layer_title + '</span>';
+				} else {
+					html += '	<button class="layer_name" id="layer_name" data-id="' + value.id + '">' + layer_title + '</button>';
+				}
 				html += '	<div class="clear"></div>';
 				html += '</div>';
 

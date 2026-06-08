@@ -55,6 +55,7 @@ export class Insert_layer_action extends Base_action {
 			color: config.COLOR,
 			filters: [],
 			render_function: null,
+			locked: false,
 		};
 
 		// Build data

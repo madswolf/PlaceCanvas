@@ -196,6 +196,26 @@ body .sp-preview{
 	}
 }
 
+/* ========== place submit button =========================================== */
+
+.submit_place_button {
+	margin-left: auto;
+	margin-right: 10px;
+	padding: 5px 14px;
+	white-space: nowrap;
+	cursor: pointer;
+	font-weight: bold;
+	background-color: var(--button-primary-background-color, #2c7be5);
+	color: var(--button-primary-color, #fff);
+	border: none;
+	border-radius: 4px;
+	height: 30px;
+	line-height: 20px;
+}
+.submit_place_button:hover {
+	opacity: 0.85;
+}
+
 /* ========== sub-header ==================================================== */
 
 .submenu{
@@ -492,6 +512,21 @@ IMPORTANT: any new icon should also must be added on /service-worker.js + its ve
 	border: none;
 	box-shadow: none;
 }
+/* locked layer */
+.layers_list .locked_layer {
+	opacity: 0.75;
+	border-left: 3px solid var(--border-color);
+}
+.layers_list .locked_label {
+	display: block;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	padding: 2px 5px;
+	font-style: italic;
+	cursor: default;
+}
+
 /* filters */
 .layers_list .filters{
 	margin-bottom: 5px;

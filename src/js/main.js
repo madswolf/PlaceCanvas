@@ -22,6 +22,7 @@ import Base_state_class from './core/base-state.js';
 import Base_search_class from './core/base-search.js';
 import File_open_class from './modules/file/open.js';
 import File_save_class from './modules/file/save.js';
+import Place_integration_class from './modules/file/place-integration.js';
 import * as Actions from './actions/index.js';
 
 window.addEventListener('load', function (e) {
@@ -33,6 +34,7 @@ window.addEventListener('load', function (e) {
 	var File_open = new File_open_class();
 	var File_save = new File_save_class();
 	var Base_search = new Base_search_class();
+	var Place_integration = new Place_integration_class();
 
 	// Register singletons in app module
 	app.Actions = Actions;
@@ -43,6 +45,7 @@ window.addEventListener('load', function (e) {
 	app.Layers = Layers;
 	app.State = Base_state;
 	app.Tools = Base_tools;
+	app.PlaceIntegration = Place_integration;
 
 	// Register as global for quick or external access
 	window.Layers = Layers;
@@ -54,4 +57,7 @@ window.addEventListener('load', function (e) {
 	// Render all
 	GUI.init();
 	Layers.init();
+
+	// Initialize Place integration after core layers are ready
+	Place_integration.init();
 }, false);

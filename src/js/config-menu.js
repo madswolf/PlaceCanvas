@@ -3,13 +3,6 @@ const menuDefinition = [
 		name: 'File',
 		children: [
 			{
-				name: 'New',
-				target: 'file/new.new'
-			},
-			{
-				divider: true
-			},
-			{
 				name: 'Open',
 				children: [
 					{
