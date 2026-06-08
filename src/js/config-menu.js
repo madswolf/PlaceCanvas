@@ -3,48 +3,6 @@ const menuDefinition = [
 		name: 'File',
 		children: [
 			{
-				name: 'Open',
-				children: [
-					{
-						name: 'Open File',
-						shortcut: 'O',
-						ellipsis: true,
-						target: 'file/open.open_file'
-					},
-					{
-						name: 'Open Directory',
-						ellipsis: true,
-						target: 'file/open.open_dir'
-					},
-					{
-						name: 'Open from Webcam',
-						target: 'file/open.open_webcam'
-					},
-					{
-						name: 'Open URL',
-						ellipsis: true,
-						target: 'file/open.open_url'
-					},
-					{
-						name: 'Open Data URL',
-						ellipsis: true,
-						target: 'file/open.open_data_url'
-					},
-					{
-						name: 'Open Test Template',
-						target: 'file/open.open_template_test'
-					}
-				]
-			},
-			{
-				name: 'Search Images',
-				ellipsis: true,
-				target: 'file/open.search'
-			},
-			{
-				divider: true
-			},
-			{
 				name: 'Export',
 				ellipsis: true,
 				shortcut: 'S',
@@ -74,11 +32,6 @@ const menuDefinition = [
 				name: 'Quick Save',
 				shortcut: 'F9',
 				target: 'file/quicksave.quicksave'
-			},
-			{
-				name: 'Quick Load',
-				shortcut: 'F10',
-				target: 'file/quickload.quickload'
 			}
 		]
 	},

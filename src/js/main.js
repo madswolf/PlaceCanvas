@@ -59,5 +59,5 @@ window.addEventListener('load', function (e) {
 	Layers.init();
 
 	// Initialize Place integration after core layers are ready
-	Place_integration.init();
+	Place_integration.init().catch(e => console.error('Place integration init failed:', e));
 }, false);

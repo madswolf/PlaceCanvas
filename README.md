@@ -1,60 +1,77 @@
-# miniPaint
+# PlaceCanvas
 
-Online image editor lets you create and edit images using HTML5 technologies. No need to buy, download, install, or have outdated flash. No ads. Key features: layers, filters, open source Photoshop alternative.
+A browser-based drawing tool for [MemeApi](https://github.com/madswolf/MemeApi) Place submissions. Built on [miniPaint](https://github.com/viliusle/miniPaint).
 
-miniPaint operates directly in the browser. You can create images by pasting from the clipboard (ctrl+v) or uploading from the computer (_using menu or drag & drop_). Nothing will be sent to any server. Everything stays in your browser. 
+Users paint on top of the current Place image and submit their changes. The app handles authentication, pixel-change pricing, and image submission automatically.
 
-## URL:
-**https://viliusle.github.io/miniPaint/**
+## How it works
 
-## Preview:
-![miniPaint](https://raw.githubusercontent.com/viliusle/miniPaint/master/images/preview.gif)
-(generated using miniPaint)
+1. On load, the latest Place image is fetched and locked as the bottom layer — it cannot be selected, edited, or deleted.
+2. A blank paint layer is added above it for the user to draw on.
+3. The base image refreshes every 30 seconds in the background.
+4. Clicking **Submit to Place** calculates the number of changed pixels, shows the token cost, and on confirmation posts the composite image to the API.
 
-**Change log:** [/miniPaint/releases](https://github.com/viliusle/miniPaint/releases)
+## Configuration
 
-## Browser Support
-- Chrome
-- Firefox
-- Opera
-- Edge
-- Safari
-- Yandex
+Copy `.env.example` to `.env` and fill in your values:
 
-## Features
+```
+PLACE_API_URL=https://your-memeapi.example.com
+PLACE_ID=your-place-id
+```
 
-**Files**: open images, directories, URLs, data URLs, drag and drop, save (PNG, JPG, BMP, WEBP, animated GIF, TIFF, JSON (layers data), print.
+These are baked into the bundle at build time. The values can be overridden at runtime with URL query parameters:
 
-**Edit**: undo, cut, copy, paste, selection, paste from the clipboard.
+```
+http://localhost:8080/?apiUrl=https://other-api.example.com&placeId=abc123
+```
 
-**Image**: information, EXIF, trim, zoom, resize (Hermite resample, default resize), rotate, flip, color corrections (brightness, contrast, hue, saturation, luminance), automatic color adjustment, grid, histogram, negative.
+## Authentication
 
-**Layers**: multi-layer system, differences, merging, flattening, transparency support.
+Authentication uses a short-lived temporary password issued by the MemeApi bot:
 
-**Effects**: black and white, blur (box, gaussian, stack, zoom), bulge/pinch, denoise, desaturation, dither, dot screen, edge, emboss, enrich, gamma, grains, grayscale, heatmap, jpg compression, mosaic, oil, sepia, sharpen, solarize, tilt shift, vignette, vibrance, vintage, blueprint, night vision, pencil, also instagram filters: 1977, aden, clarendon, gingham, inkwell, lo-fi, toaster, valencia, x-pro ii.
+```
+http://localhost:8080/?tempPassword=<temporary_password>
+```
 
-**Tools**: pencil, brush, magic wand, eraser, fill, color picker, letter, crop, blur, sharpener, desaturation, clone, borders, sprites, keypoints, color zoom, change color, restore transparency, content fill. 
+The app exchanges it for an access token and refresh token, stores them in `localStorage`, and handles silent renewal before expiry. The `tempPassword` is stripped from the URL immediately after use.
 
-**Help**: keyboard shortcuts, translation.
+If the session expires, reload the page with a fresh `?tempPassword=`.
 
-## Embed
-To embed this app on another page, use the following HTML code:
+## Local development
 
-    <iframe style="box-sizing:border-box; width:100%; height:100vh;" id="miniPaint" src="https://viliusle.github.io/miniPaint/" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+Install dependencies:
 
-## Build instructions
-See [Wiki > Build instructions](https://github.com/viliusle/miniPaint/wiki/Build-instructions)
+```bash
+npm install
+```
 
-## Wiki
-See [Wiki](https://github.com/viliusle/miniPaint/wiki)
+Start the dev server with hot reload:
 
-## Contributors
-<a align="center" href="https://github.com/viliusle/miniPaint/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=viliusle/miniPaint" />
-</a>
+```bash
+npm run server
+```
+
+The dev server opens at `http://localhost:8080` by default.
+
+Build a development bundle (no minification):
+
+```bash
+npm run dev
+```
+
+Build a production bundle:
+
+```bash
+npm run build
+```
+
+Output lands in `dist/bundle.js`.
+
+## Browser support
+
+Chrome, Firefox, Edge, Opera, Safari
 
 ## License
-MIT License
 
-## Support
-Please use the GitHub issues for support, feature requests and bug reports, or contact us by sending an email to www.viliusl@gmail.com.
+MIT
