@@ -17,6 +17,7 @@ class Place_integration_class {
 
 		this.Base_layers = new Base_layers_class();
 		this.api_url = null;
+		this.media_host = null;
 		this.place_id = null;
 		this.base_layer_id = null;
 		this.filename = null;
@@ -30,11 +31,13 @@ class Place_integration_class {
 		const params = new URLSearchParams(window.location.search);
 
 		// .env values are the defaults; URL params override them at runtime.
-		const envApiUrl  = typeof PLACE_API_URL !== 'undefined' ? PLACE_API_URL : '';
-		const envPlaceId = typeof PLACE_ID      !== 'undefined' ? PLACE_ID      : '';
+		const envApiUrl    = typeof PLACE_API_URL    !== 'undefined' ? PLACE_API_URL    : '';
+		const envPlaceId   = typeof PLACE_ID         !== 'undefined' ? PLACE_ID         : '';
+		const envMediaHost = typeof PLACE_MEDIA_HOST !== 'undefined' ? PLACE_MEDIA_HOST : '';
 
-		this.api_url  = (params.get('apiUrl')  || envApiUrl).replace(/\/$/, '');
-		this.place_id =  params.get('placeId') || envPlaceId;
+		this.api_url    = (params.get('apiUrl')    || envApiUrl).replace(/\/$/, '');
+		this.media_host = (params.get('mediaHost') || envMediaHost).replace(/\/$/, '');
+		this.place_id   =  params.get('placeId')   || envPlaceId;
 
 		await this.init_auth(params);
 
@@ -48,11 +51,11 @@ class Place_integration_class {
 
 		this.add_submit_button();
 
-		if (this.api_url && this.place_id) {
+		if (this.api_url && this.media_host && this.place_id) {
 			this.load_place_image();
 			this.start_periodic_refetch(30000);
 		} else {
-			alertify.message('Configure PLACE_API_URL and PLACE_ID in .env and rebuild.');
+			alertify.message('Configure PLACE_API_URL, PLACE_MEDIA_HOST and PLACE_ID in .env and rebuild.');
 		}
 	}
 
@@ -182,15 +185,11 @@ class Place_integration_class {
 	// ── Place image loading ────────────────────────────────────────────────────
 
 	async load_place_image() {
-		if (!this.api_url || !this.place_id) return;
+		if (!this.media_host || !this.place_id) return;
 
 		try {
-			const subResp = await fetch(`${this.api_url}/MemePlaces/${this.place_id}/submissions/latest`);
-			if (subResp.status === 204) return; // no submissions yet
-			if (!subResp.ok) throw new Error(`HTTP ${subResp.status}`);
-			const submission = await subResp.json();
-
-			const imgResp = await fetch(`${this.api_url}/MemePlaces/submissions/${submission.id}`);
+			const imgResp = await fetch(`${this.media_host}/places/${this.place_id}_latest.png`);
+			if (imgResp.status === 404) return; // no image yet
 			if (!imgResp.ok) throw new Error(`HTTP ${imgResp.status}`);
 
 			const imgBuffer = await imgResp.arrayBuffer();
