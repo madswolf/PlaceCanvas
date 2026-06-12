@@ -24,7 +24,7 @@ class Help_shortcuts_class {
 				{title: "CTRL + V", value: 'Paste'},
 				{title: "F10", value: 'Quick Load'},
 				{title: "F9", value: 'Quick Save'},
-				{title: "R", value: 'Resize'},
+				{title: "R", value: 'Refresh Place Image'},
 				{title: "L", value: 'Rotate left'},
 				{title: "U", value: 'Ruler'},
 				{title: "Shift + S", value: 'Save As'},

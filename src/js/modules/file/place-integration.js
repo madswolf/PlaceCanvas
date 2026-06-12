@@ -1,6 +1,7 @@
 import app from './../../app.js';
 import config from './../../config.js';
 import Base_layers_class from './../../core/base-layers.js';
+import Helper_class from './../../libs/helpers.js';
 import alertify from './../../../../node_modules/alertifyjs/build/alertify.min.js';
 
 var instance = null;
@@ -16,6 +17,7 @@ class Place_integration_class {
 		instance = this;
 
 		this.Base_layers = new Base_layers_class();
+		this.Helper = new Helper_class();
 		this.api_url = null;
 		this.media_host = null;
 		this.place_id = null;
@@ -23,6 +25,7 @@ class Place_integration_class {
 		this.filename = null;
 		this.refetch_interval_id = null;
 		this.refresh_timer_id = null;
+		this.reference_image_data = null; // last-fetched server pixels, used for delta refresh
 	}
 
 	// ── Initialisation ─────────────────────────────────────────────────────────
@@ -50,6 +53,14 @@ class Place_integration_class {
 		}
 
 		this.add_submit_button();
+
+		document.addEventListener('keydown', (event) => {
+			if (this.Helper.is_input(event.target)) return;
+			if (event.keyCode === 82 && !event.ctrlKey && !event.metaKey) {
+				this.load_place_image();
+				event.preventDefault();
+			}
+		}, false);
 
 		if (this.api_url && this.media_host && this.place_id) {
 			this.load_place_image();
@@ -200,7 +211,7 @@ class Place_integration_class {
 
 			const existingBase = config.layers.find(l => l.id === this.base_layer_id);
 			if (this.base_layer_id !== null && existingBase) {
-				this.update_base_layer_image(existingBase, dataUrl);
+				await this.update_base_layer_image(existingBase, dataUrl);
 			} else {
 				await this.insert_base_layer(dataUrl);
 			}
@@ -216,13 +227,14 @@ class Place_integration_class {
 				name: 'Place Image',
 				type: 'image',
 				data: dataUrl,
-				locked: true,
 			}, true)
 		);
 
 		const baseLayer = config.layer;
 		this.base_layer_id = baseLayer.id;
-		baseLayer.locked = true;
+
+		// Store the initial server pixels as the reference for future delta refreshes
+		this.reference_image_data = await this.decode_to_image_data(dataUrl);
 
 		// Keep base layer below all others
 		const minOrder = Math.min(...config.layers.map(l => l.order));
@@ -237,17 +249,162 @@ class Place_integration_class {
 		app.GUI.GUI_layers.render_layers();
 	}
 
-	update_base_layer_image(layer, dataUrl) {
+	async update_base_layer_image(layer, dataUrl) {
+		const newRef = await this.decode_to_image_data(dataUrl);
+		const oldRef = this.reference_image_data;
+
+		// No prior reference or canvas dimensions changed: direct replace, no delta layer
+		if (!oldRef || !layer.link
+				|| oldRef.width  !== newRef.width
+				|| oldRef.height !== newRef.height) {
+			this.reference_image_data = newRef;
+			this.set_layer_from_image_data(layer, newRef);
+			return;
+		}
+
+		if (this.has_base_layer_been_edited(layer)) {
+			// Preserve the user's edits as a new layer before the base is overwritten
+			const userEdits = this.create_user_edits_image_data(layer, oldRef);
+			if (this.image_data_has_content(userEdits)) {
+				await this.insert_image_data_layer(userEdits, 'Base Edits');
+			}
+
+			// Surface server-side changes as a separate layer too
+			const serverDelta = this.create_delta_image_data(oldRef, newRef);
+			if (this.image_data_has_content(serverDelta)) {
+				await this.insert_image_data_layer(serverDelta, 'Place Update');
+			}
+		}
+
+		// Refresh the base layer with the clean new server image
+		this.reference_image_data = newRef;
+		this.set_layer_from_image_data(layer, newRef);
+	}
+
+	// Returns true when the base layer's current pixels differ from the reference.
+	has_base_layer_been_edited(layer) {
+		if (!this.reference_image_data || !layer.link) return false;
+
+		const canvas = document.createElement('canvas');
+		canvas.width  = layer.width;
+		canvas.height = layer.height;
+		canvas.getContext('2d').drawImage(layer.link, 0, 0);
+		const current = canvas.getContext('2d').getImageData(0, 0, layer.width, layer.height);
+
+		const ref = this.reference_image_data;
+		if (current.width !== ref.width || current.height !== ref.height) return true;
+
+		const curD = current.data;
+		const refD = ref.data;
+		for (let i = 0; i < curD.length; i++) {
+			if (curD[i] !== refD[i]) return true;
+		}
+		return false;
+	}
+
+	// Builds an ImageData containing only the pixels the user changed relative to
+	// the server reference; unchanged pixels are left fully transparent.
+	create_user_edits_image_data(layer, reference) {
+		const canvas = document.createElement('canvas');
+		canvas.width  = layer.width;
+		canvas.height = layer.height;
+		canvas.getContext('2d').drawImage(layer.link, 0, 0);
+		const current = canvas.getContext('2d').getImageData(0, 0, layer.width, layer.height);
+
+		const result = new ImageData(current.width, current.height);
+		const res = result.data;
+		const cur = current.data;
+		const ref = reference.data;
+		for (let i = 0; i < cur.length; i += 4) {
+			if (cur[i] !== ref[i] || cur[i+1] !== ref[i+1] || cur[i+2] !== ref[i+2] || cur[i+3] !== ref[i+3]) {
+				res[i]   = cur[i];
+				res[i+1] = cur[i+1];
+				res[i+2] = cur[i+2];
+				res[i+3] = cur[i+3];
+			}
+			// else: transparent (ImageData default)
+		}
+		return result;
+	}
+
+	// Builds an ImageData where pixels that changed between oldRef and newRef carry
+	// the new server colour; unchanged pixels are fully transparent.
+	create_delta_image_data(oldRef, newRef) {
+		const result = new ImageData(newRef.width, newRef.height);
+		const res = result.data;
+		const old = oldRef.data;
+		const nw  = newRef.data;
+		for (let i = 0; i < nw.length; i += 4) {
+			if (nw[i] !== old[i] || nw[i+1] !== old[i+1] || nw[i+2] !== old[i+2] || nw[i+3] !== old[i+3]) {
+				res[i]   = nw[i];
+				res[i+1] = nw[i+1];
+				res[i+2] = nw[i+2];
+				res[i+3] = nw[i+3];
+			}
+			// else: transparent (ImageData default)
+		}
+		return result;
+	}
+
+	// Returns true if any pixel in imageData has a non-zero alpha channel.
+	image_data_has_content(imageData) {
+		const data = imageData.data;
+		for (let i = 3; i < data.length; i += 4) {
+			if (data[i] > 0) return true;
+		}
+		return false;
+	}
+
+	// Inserts a new named image layer above the current layer stack.
+	async insert_image_data_layer(imageData, name) {
+		const canvas = document.createElement('canvas');
+		canvas.width  = imageData.width;
+		canvas.height = imageData.height;
+		canvas.getContext('2d').putImageData(imageData, 0, 0);
+
+		await app.State.do_action(
+			new app.Actions.Insert_layer_action({
+				name,
+				type: 'image',
+				data: canvas.toDataURL('image/png'),
+			})
+		);
+
+		app.GUI.GUI_layers.render_layers();
+	}
+
+	// Decode a data URL into an ImageData via an offscreen canvas.
+	decode_to_image_data(dataUrl) {
+		return new Promise((resolve, reject) => {
+			const img = new Image();
+			img.onload = () => {
+				const canvas = document.createElement('canvas');
+				canvas.width  = img.width;
+				canvas.height = img.height;
+				const ctx = canvas.getContext('2d');
+				ctx.drawImage(img, 0, 0);
+				resolve(ctx.getImageData(0, 0, img.width, img.height));
+			};
+			img.onerror = () => reject(new Error('Failed to decode server image'));
+			img.src = dataUrl;
+		});
+	}
+
+	// Write an ImageData back into a layer's link image and trigger a re-render.
+	set_layer_from_image_data(layer, imageData) {
+		const canvas = document.createElement('canvas');
+		canvas.width  = imageData.width;
+		canvas.height = imageData.height;
+		canvas.getContext('2d').putImageData(imageData, 0, 0);
 		const img = new Image();
-		img.crossOrigin = 'Anonymous';
 		img.onload = () => {
-			layer.link = img;
-			layer.width = img.width;
+			layer.link   = img;
+			layer.width  = img.width;
 			layer.height = img.height;
 			config.need_render = true;
 			app.GUI.GUI_layers.render_layers();
 		};
-		img.src = dataUrl;
+		img.src = canvas.toDataURL('image/png');
 	}
 
 	start_periodic_refetch(intervalMs) {
