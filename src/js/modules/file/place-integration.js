@@ -317,6 +317,7 @@ class Place_integration_class {
 
 			const totalCost = (changedPixels * pricePerPixel).toFixed(4);
 			alertify.confirm(
+				'',
 				`Submit ${changedPixels.toLocaleString()} changed pixel(s) for ${totalCost} tokens?`,
 				() => { this.do_submit(); },
 				() => {}
@@ -327,7 +328,20 @@ class Place_integration_class {
 		}
 	}
 
+	show_spinner() {
+		const overlay = document.createElement('div');
+		overlay.id = 'submit-spinner-overlay';
+		overlay.innerHTML = '<div class="submit-spinner"></div>';
+		document.body.appendChild(overlay);
+	}
+
+	hide_spinner() {
+		const overlay = document.getElementById('submit-spinner-overlay');
+		if (overlay) overlay.remove();
+	}
+
 	async do_submit() {
+		this.show_spinner();
 		try {
 			const exportCanvas = document.createElement('canvas');
 			exportCanvas.width  = config.WIDTH;
@@ -350,6 +364,20 @@ class Place_integration_class {
 
 			if (!resp.ok) {
 				const text = await resp.text();
+				console.error('Submission failed', {
+					url:          `${this.api_url}/MemePlaces/submissions/submit`,
+					status:       resp.status,
+					statusText:   resp.statusText,
+					responseBody: text,
+					file: {
+						name: filename,
+						sizeBytes: blob.size,
+						type: blob.type,
+					},
+					placeId:    this.place_id,
+					canvas:     `${config.WIDTH}x${config.HEIGHT}`,
+					hasToken:   !!localStorage.getItem(LS_ACCESS_TOKEN),
+				});
 				throw new Error(`HTTP ${resp.status}: ${text}`);
 			}
 
@@ -359,6 +387,8 @@ class Place_integration_class {
 		} catch (e) {
 			alertify.error('Submission failed: ' + e.message);
 			console.error(e);
+		} finally {
+			this.hide_spinner();
 		}
 	}
 

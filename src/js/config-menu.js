@@ -153,26 +153,6 @@ const menuDefinition = [
 				target: 'image/information.information'
 			},
 			{
-				name: 'Canvas Size',
-				ellipsis: true,
-				target: 'image/size.size'
-			},
-			{
-				name: 'Trim',
-				ellipsis: true,
-				shortcut: 'T',
-				target: 'image/trim.trim'
-			},
-			{
-				divider: true
-			},
-			{
-				name: 'Resize',
-				ellipsis: true,
-				shortcut: 'R',
-				target: 'image/resize.resize'
-			},
-			{
 				name: 'Rotate',
 				ellipsis: true,
 				target: 'image/rotate.rotate'

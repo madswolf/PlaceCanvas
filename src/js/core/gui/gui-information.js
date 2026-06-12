@@ -11,7 +11,7 @@ import Tools_translate_class from './../../modules/tools/translate.js';
 
 var template = `
 	<span class="trn label">Size:</span>
-	<span id="mouse_info_size">-</span> 
+	<span id="mouse_info_size">-</span>
 	<span class="id-mouse_info_units"></span>
 	<br />
 	<span class="trn label">Mouse:</span>
@@ -20,6 +20,7 @@ var template = `
 	<br />
 	<span class="trn label">Resolution:</span>
 	<span id="mouse_info_resolution">-</span>
+	<div id="place_debug_info" style="display:none;"></div>
 `;
 
 /**

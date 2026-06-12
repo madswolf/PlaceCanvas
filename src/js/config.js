@@ -448,14 +448,6 @@ config.TOOLS = [
 		},
 	},
 	{
-		name: 'crop',
-		on_update: 'on_params_update',
-		on_leave: 'on_leave',
-		attributes: {
-			crop: true,
-		},
-	},
-	{
 		name: 'blur',
 		attributes: {
 			size: 30,

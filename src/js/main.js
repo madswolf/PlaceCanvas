@@ -23,6 +23,7 @@ import Base_search_class from './core/base-search.js';
 import File_open_class from './modules/file/open.js';
 import File_save_class from './modules/file/save.js';
 import Place_integration_class from './modules/file/place-integration.js';
+import Help_debug_info_class from './modules/help/debug-info.js';
 import * as Actions from './actions/index.js';
 
 window.addEventListener('load', function (e) {
@@ -35,6 +36,7 @@ window.addEventListener('load', function (e) {
 	var File_save = new File_save_class();
 	var Base_search = new Base_search_class();
 	var Place_integration = new Place_integration_class();
+	var Debug_info = new Help_debug_info_class();
 
 	// Register singletons in app module
 	app.Actions = Actions;
