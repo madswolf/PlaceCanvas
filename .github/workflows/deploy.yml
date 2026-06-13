@@ -38,6 +38,7 @@ jobs:
         env:
           PLACE_API_URL: ${{ secrets.PLACE_API_URL }}
           PLACE_ID: ${{ secrets.PLACE_ID }}
+          PLACE_MEDIA_HOST: ${{ secrets.PLACE_MEDIA_HOST }}
 
       - name: Assemble site
         run: |

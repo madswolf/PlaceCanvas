@@ -13,17 +13,58 @@ Users paint on top of the current Place image and submit their changes. The app 
 
 ## Configuration
 
-Copy `.env.example` to `.env` and fill in your values:
+Three variables are baked into the bundle at build time:
+
+| Variable | Description |
+|---|---|
+| `PLACE_API_URL` | Base URL of the MemeApi instance (no trailing slash) |
+| `PLACE_ID` | UUID of the Place to load and submit to |
+| `PLACE_MEDIA_HOST` | Base URL of the media/file server that hosts the Place images |
+
+Copy `.env.example` to `.env` and fill in your values for local development:
 
 ```
 PLACE_API_URL=https://your-memeapi.example.com
 PLACE_ID=your-place-id
+PLACE_MEDIA_HOST=https://your-media-host.example.com
 ```
 
-These are baked into the bundle at build time. The values can be overridden at runtime with URL query parameters:
+All three values can be overridden at runtime with URL query parameters:
 
 ```
-http://localhost:8080/?apiUrl=https://other-api.example.com&placeId=abc123
+https://madswolf.github.io/PlaceCanvas/?apiUrl=https://other-api.example.com&placeId=abc123&mediaHost=https://other-media.example.com
+```
+
+## Deployment (GitHub Pages)
+
+The repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) that builds the frontend and publishes it to GitHub Pages on every push to `master`.
+
+### One-time setup
+
+**1. Enable GitHub Pages**
+
+Go to your repository → **Settings → Pages** and set:
+- Source: **GitHub Actions**
+
+**2. Add repository secrets**
+
+Go to **Settings → Secrets and variables → Actions → Repository secrets** and add:
+
+| Secret name | Value |
+|---|---|
+| `PLACE_API_URL` | e.g. `https://your-memeapi.example.com` |
+| `PLACE_ID` | e.g. `c6a058f9-8ce4-40e0-bd55-8f98d249f7aa` |
+| `PLACE_MEDIA_HOST` | e.g. `https://your-media-host.fra1.digitaloceanspaces.com` |
+
+These are passed as environment variables during the build step so they get compiled into `bundle.js`. They are never written to disk or exposed in the repository.
+
+**3. Push to master**
+
+The workflow triggers automatically on every push to `master`. You can also run it manually from the **Actions** tab using **Run workflow**.
+
+The deployed site will be available at:
+```
+https://madswolf.github.io/PlaceCanvas/
 ```
 
 ## Authentication
