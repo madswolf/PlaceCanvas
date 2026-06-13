@@ -39,7 +39,7 @@ export class Autoresize_canvas_action extends Base_action {
 		}
 
 		// Resize up
-		if (width > new_config_width || height > new_config_height) {
+		if (can_automate !== false && (width > new_config_width || height > new_config_height)) {
 			const wrapper = document.getElementById('main_wrapper');
 			const page_w = wrapper.clientWidth;
 			const page_h = wrapper.clientHeight;

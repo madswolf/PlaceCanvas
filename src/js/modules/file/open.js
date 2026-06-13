@@ -67,7 +67,7 @@ class File_open_class {
 			data: data,
 		};
 		app.State.do_action(
-			new app.Actions.Insert_layer_action(new_layer)
+			new app.Actions.Insert_layer_action(new_layer, false)
 		);
 	}
 
