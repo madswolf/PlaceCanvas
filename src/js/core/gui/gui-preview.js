@@ -5,6 +5,7 @@
 
 import config from './../../config.js';
 import Base_layers_class from './../base-layers.js';
+import zoomView from './../../libs/zoomView.js';
 
 var instance = null;
 
@@ -49,6 +50,8 @@ class GUI_preview_class {
 		};
 
 		this.mouse_pressed = false;
+		this.mid_drag = false;
+		this.mid_drag_last = { x: 0, y: 0 };
 		this.canvas_preview = null;
 		if (GUI_class != undefined) {
 			this.GUI = GUI_class;
@@ -116,6 +119,28 @@ class GUI_preview_class {
 				_this.zoom(+1, e);
 			else
 				_this.zoom(-1, e);
+		}, false);
+		document.getElementById('main_wrapper').addEventListener('mousedown', function (e) {
+			if (e.button === 1) {
+				e.preventDefault();
+				_this.mid_drag = true;
+				_this.mid_drag_last.x = e.clientX;
+				_this.mid_drag_last.y = e.clientY;
+			}
+		}, false);
+		document.addEventListener('mousemove', function (e) {
+			if (!_this.mid_drag) return;
+			var dx = e.clientX - _this.mid_drag_last.x;
+			var dy = e.clientY - _this.mid_drag_last.y;
+			_this.mid_drag_last.x = e.clientX;
+			_this.mid_drag_last.y = e.clientY;
+			zoomView.move(dx, dy);
+			config.need_render = true;
+		}, false);
+		document.addEventListener('mouseup', function (e) {
+			if (e.button === 1) {
+				_this.mid_drag = false;
+			}
 		}, false);
 		window.addEventListener('resize', function (e) {
 			//resize
