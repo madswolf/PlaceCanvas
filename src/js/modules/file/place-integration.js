@@ -60,6 +60,10 @@ class Place_integration_class {
 				this.load_place_image();
 				event.preventDefault();
 			}
+			if (event.keyCode === 87 && !event.ctrlKey && !event.metaKey) {
+				this.wipe_local_changes();
+				event.preventDefault();
+			}
 		}, false);
 
 		if (this.api_url && this.media_host && this.place_id) {
@@ -410,6 +414,58 @@ class Place_integration_class {
 	start_periodic_refetch(intervalMs) {
 		if (this.refetch_interval_id) clearInterval(this.refetch_interval_id);
 		this.refetch_interval_id = setInterval(() => this.load_place_image(), intervalMs);
+	}
+
+	// ── Wipe ───────────────────────────────────────────────────────────────────
+
+	wipe_local_changes() {
+		alertify.confirm(
+			'',
+			'Wipe all local changes and reload the place image from the server?',
+			async () => {
+				try {
+					// Pause periodic refresh to prevent race conditions during wipe
+					if (this.refetch_interval_id) {
+						clearInterval(this.refetch_interval_id);
+						this.refetch_interval_id = null;
+					}
+
+					// Unlock all layers so deletion can proceed
+					for (const layer of config.layers) {
+						layer.locked = false;
+					}
+
+					// Delete all layers directly — bypasses do_action so the reset
+					// does not land on the undo stack (prevents Ctrl+Z restoring old layers)
+					const reset = new app.Actions.Reset_layers_action();
+					await reset.do();
+					await reset.free();
+
+					// Purge the entire undo/redo history so no old layers survive in memory
+					const oldHistory = [...app.State.action_history];
+					app.State.action_history = [];
+					app.State.action_history_index = 0;
+					for (const action of oldHistory) {
+						try { await action.free(); } catch (_) {}
+					}
+
+					// Clear any persisted canvas state so it does not survive a page reload
+					localStorage.removeItem('quicksave_data');
+
+					this.base_layer_id = null;
+					this.reference_image_data = null;
+
+					await this.load_place_image();
+
+					// Resume periodic refresh
+					this.start_periodic_refetch(30000);
+				} catch (e) {
+					alertify.error('Failed to wipe changes: ' + e.message);
+					console.error(e);
+				}
+			},
+			() => {}
+		);
 	}
 
 	// ── Submission ─────────────────────────────────────────────────────────────

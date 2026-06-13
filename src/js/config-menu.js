@@ -32,6 +32,15 @@ const menuDefinition = [
 				name: 'Quick Save',
 				shortcut: 'F9',
 				target: 'file/quicksave.quicksave'
+			},
+			{
+				divider: true
+			},
+			{
+				name: 'Wipe Local Changes',
+				shortcut: 'W',
+				ellipsis: true,
+				target: 'file/place-integration.wipe_local_changes'
 			}
 		]
 	},

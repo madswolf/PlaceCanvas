@@ -25,6 +25,7 @@ class Help_shortcuts_class {
 				{title: "F10", value: 'Quick Load'},
 				{title: "F9", value: 'Quick Save'},
 				{title: "R", value: 'Refresh Place Image'},
+				{title: "W", value: 'Wipe Local Changes'},
 				{title: "L", value: 'Rotate left'},
 				{title: "U", value: 'Ruler'},
 				{title: "Shift + S", value: 'Save As'},
