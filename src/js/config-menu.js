@@ -3,55 +3,6 @@ const menuDefinition = [
 		name: 'File',
 		children: [
 			{
-				name: 'New',
-				target: 'file/new.new'
-			},
-			{
-				divider: true
-			},
-			{
-				name: 'Open',
-				children: [
-					{
-						name: 'Open File',
-						shortcut: 'O',
-						ellipsis: true,
-						target: 'file/open.open_file'
-					},
-					{
-						name: 'Open Directory',
-						ellipsis: true,
-						target: 'file/open.open_dir'
-					},
-					{
-						name: 'Open from Webcam',
-						target: 'file/open.open_webcam'
-					},
-					{
-						name: 'Open URL',
-						ellipsis: true,
-						target: 'file/open.open_url'
-					},
-					{
-						name: 'Open Data URL',
-						ellipsis: true,
-						target: 'file/open.open_data_url'
-					},
-					{
-						name: 'Open Test Template',
-						target: 'file/open.open_template_test'
-					}
-				]
-			},
-			{
-				name: 'Search Images',
-				ellipsis: true,
-				target: 'file/open.search'
-			},
-			{
-				divider: true
-			},
-			{
 				name: 'Export',
 				ellipsis: true,
 				shortcut: 'S',
@@ -83,9 +34,13 @@ const menuDefinition = [
 				target: 'file/quicksave.quicksave'
 			},
 			{
-				name: 'Quick Load',
-				shortcut: 'F10',
-				target: 'file/quickload.quickload'
+				divider: true
+			},
+			{
+				name: 'Wipe Local Changes',
+				shortcut: 'W',
+				ellipsis: true,
+				target: 'file/place-integration.wipe_local_changes'
 			}
 		]
 	},
@@ -205,26 +160,6 @@ const menuDefinition = [
 				shortcut: 'I',
 				ellipsis: true,
 				target: 'image/information.information'
-			},
-			{
-				name: 'Canvas Size',
-				ellipsis: true,
-				target: 'image/size.size'
-			},
-			{
-				name: 'Trim',
-				ellipsis: true,
-				shortcut: 'T',
-				target: 'image/trim.trim'
-			},
-			{
-				divider: true
-			},
-			{
-				name: 'Resize',
-				ellipsis: true,
-				shortcut: 'R',
-				target: 'image/resize.resize'
 			},
 			{
 				name: 'Rotate',

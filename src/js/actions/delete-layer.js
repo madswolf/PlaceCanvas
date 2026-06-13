@@ -34,6 +34,10 @@ export class Delete_layer_action extends Base_action {
 			throw new Error('Aborted - Layer to delete not found');
 		}
 
+		if (config.layers[this.delete_index].locked) {
+			throw new Error('Aborted - Cannot delete locked layer');
+		}
+
 		if (config.layers.length == 1 && (force == undefined || force == false)) {
 			// Only 1 layer left
 			if (config.layer.type == null) {

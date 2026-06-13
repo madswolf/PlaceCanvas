@@ -14,4 +14,6 @@ nbproject/
 
 /node_modules/
 *.js.ignore
+dist/
+.env
 

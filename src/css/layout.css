@@ -196,6 +196,26 @@ body .sp-preview{
 	}
 }
 
+/* ========== place submit button =========================================== */
+
+.submit_place_button {
+	margin-left: auto;
+	margin-right: 10px;
+	padding: 5px 14px;
+	white-space: nowrap;
+	cursor: pointer;
+	font-weight: bold;
+	background-color: var(--button-primary-background-color, #2c7be5);
+	color: var(--button-primary-color, #fff);
+	border: none;
+	border-radius: 4px;
+	height: 30px;
+	line-height: 20px;
+}
+.submit_place_button:hover {
+	opacity: 0.85;
+}
+
 /* ========== sub-header ==================================================== */
 
 .submenu{
@@ -492,6 +512,21 @@ IMPORTANT: any new icon should also must be added on /service-worker.js + its ve
 	border: none;
 	box-shadow: none;
 }
+/* locked layer */
+.layers_list .locked_layer {
+	opacity: 0.75;
+	border-left: 3px solid var(--border-color);
+}
+.layers_list .locked_label {
+	display: block;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	padding: 2px 5px;
+	font-style: italic;
+	cursor: default;
+}
+
 /* filters */
 .layers_list .filters{
 	margin-bottom: 5px;
@@ -722,6 +757,78 @@ canvas{
 }
 .alertify-notifier{
 	color: black;
+}
+
+/* ── Place debug info panel ───────────────────────────────────────────────── */
+#place_debug_info {
+	margin-top: 4px;
+	font-size: 11px;
+	word-break: break-all;
+}
+.place_debug_divider {
+	border: none;
+	border-top: 1px solid #555;
+	margin: 4px 0;
+}
+
+/* ── Confirm dialog overrides ─────────────────────────────────────────────── */
+.alertify .ajs-header {
+	display: none !important;
+}
+.alertify .ajs-dialog {
+	background-color: #4a4a4a !important;
+	color: #eee !important;
+}
+.alertify .ajs-body,
+.alertify .ajs-body .ajs-content {
+	color: #eee !important;
+}
+.alertify .ajs-footer {
+	background-color: #3d3d3d !important;
+	border-top: 1px solid #666 !important;
+}
+.alertify .ajs-footer .ajs-buttons .ajs-button {
+	border-radius: 4px !important;
+	border: none !important;
+	cursor: pointer !important;
+	color: #fff !important;
+}
+.alertify .ajs-footer .ajs-buttons .ajs-button.ajs-ok {
+	background-color: #2e7d32 !important;
+}
+.alertify .ajs-footer .ajs-buttons .ajs-button.ajs-ok:hover {
+	background-color: #388e3c !important;
+}
+.alertify .ajs-footer .ajs-buttons .ajs-button.ajs-cancel {
+	background-color: #b71c1c !important;
+}
+.alertify .ajs-footer .ajs-buttons .ajs-button.ajs-cancel:hover {
+	background-color: #c62828 !important;
+}
+
+/* ── Submission spinner ───────────────────────────────────────────────────── */
+#submit-spinner-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 99999;
+}
+.submit-spinner {
+	width: 52px;
+	height: 52px;
+	border: 5px solid rgba(255, 255, 255, 0.2);
+	border-top-color: #eee;
+	border-radius: 50%;
+	animation: submit-spin 0.8s linear infinite;
+}
+@keyframes submit-spin {
+	to { transform: rotate(360deg); }
 }
 .effectsPreview{
 	cursor: pointer;

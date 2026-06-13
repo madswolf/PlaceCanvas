@@ -138,7 +138,12 @@ class Base_state_class {
 	async undo_action() {
 		if (this.can_undo()) {
 			this.action_history_index--;
-			await this.action_history[this.action_history_index].undo();
+			try {
+				await this.action_history[this.action_history_index].undo();
+			} catch (error) {
+				this.action_history_index++;
+				alertify.error('Cannot undo: base layer is locked.');
+			}
 		} else {
 			alertify.success('There\'s nothing to undo', 3);
 		}

@@ -1,5 +1,6 @@
 var webpack = require('webpack');
 var path = require('path');
+require('dotenv').config();
 
 module.exports = {
 	entry: [
@@ -42,7 +43,10 @@ module.exports = {
             "window.jQuery": "jquery"
 		}),
 		new webpack.DefinePlugin({
-			VERSION: JSON.stringify(require("./package.json").version)
+			VERSION: JSON.stringify(require("./package.json").version),
+			PLACE_API_URL:    JSON.stringify(process.env.PLACE_API_URL    || ''),
+			PLACE_ID:         JSON.stringify(process.env.PLACE_ID         || ''),
+			PLACE_MEDIA_HOST: JSON.stringify(process.env.PLACE_MEDIA_HOST || ''),
 		}),
 	],
 	devtool: "cheap-module-source-map",

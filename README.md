@@ -1,60 +1,118 @@
-# miniPaint
+# PlaceCanvas
 
-Online image editor lets you create and edit images using HTML5 technologies. No need to buy, download, install, or have outdated flash. No ads. Key features: layers, filters, open source Photoshop alternative.
+A browser-based drawing tool for [MemeApi](https://github.com/madswolf/MemeApi) Place submissions. Built on [miniPaint](https://github.com/viliusle/miniPaint).
 
-miniPaint operates directly in the browser. You can create images by pasting from the clipboard (ctrl+v) or uploading from the computer (_using menu or drag & drop_). Nothing will be sent to any server. Everything stays in your browser. 
+Users paint on top of the current Place image and submit their changes. The app handles authentication, pixel-change pricing, and image submission automatically.
 
-## URL:
-**https://viliusle.github.io/miniPaint/**
+## How it works
 
-## Preview:
-![miniPaint](https://raw.githubusercontent.com/viliusle/miniPaint/master/images/preview.gif)
-(generated using miniPaint)
+1. On load, the latest Place image is fetched and locked as the bottom layer — it cannot be selected, edited, or deleted.
+2. A blank paint layer is added above it for the user to draw on.
+3. The base image refreshes every 30 seconds in the background.
+4. Clicking **Submit to Place** calculates the number of changed pixels, shows the token cost, and on confirmation posts the composite image to the API.
 
-**Change log:** [/miniPaint/releases](https://github.com/viliusle/miniPaint/releases)
+## Configuration
 
-## Browser Support
-- Chrome
-- Firefox
-- Opera
-- Edge
-- Safari
-- Yandex
+Three variables are baked into the bundle at build time:
 
-## Features
+| Variable | Description |
+|---|---|
+| `PLACE_API_URL` | Base URL of the MemeApi instance (no trailing slash) |
+| `PLACE_ID` | UUID of the Place to load and submit to |
+| `PLACE_MEDIA_HOST` | Base URL of the media/file server that hosts the Place images |
 
-**Files**: open images, directories, URLs, data URLs, drag and drop, save (PNG, JPG, BMP, WEBP, animated GIF, TIFF, JSON (layers data), print.
+Copy `.env.example` to `.env` and fill in your values for local development:
 
-**Edit**: undo, cut, copy, paste, selection, paste from the clipboard.
+```
+PLACE_API_URL=https://your-memeapi.example.com
+PLACE_ID=your-place-id
+PLACE_MEDIA_HOST=https://your-media-host.example.com
+```
 
-**Image**: information, EXIF, trim, zoom, resize (Hermite resample, default resize), rotate, flip, color corrections (brightness, contrast, hue, saturation, luminance), automatic color adjustment, grid, histogram, negative.
+All three values can be overridden at runtime with URL query parameters:
 
-**Layers**: multi-layer system, differences, merging, flattening, transparency support.
+```
+https://madswolf.github.io/PlaceCanvas/?apiUrl=https://other-api.example.com&placeId=abc123&mediaHost=https://other-media.example.com
+```
 
-**Effects**: black and white, blur (box, gaussian, stack, zoom), bulge/pinch, denoise, desaturation, dither, dot screen, edge, emboss, enrich, gamma, grains, grayscale, heatmap, jpg compression, mosaic, oil, sepia, sharpen, solarize, tilt shift, vignette, vibrance, vintage, blueprint, night vision, pencil, also instagram filters: 1977, aden, clarendon, gingham, inkwell, lo-fi, toaster, valencia, x-pro ii.
+## Deployment (GitHub Pages)
 
-**Tools**: pencil, brush, magic wand, eraser, fill, color picker, letter, crop, blur, sharpener, desaturation, clone, borders, sprites, keypoints, color zoom, change color, restore transparency, content fill. 
+The repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) that builds the frontend and publishes it to GitHub Pages on every push to `master`.
 
-**Help**: keyboard shortcuts, translation.
+### One-time setup
 
-## Embed
-To embed this app on another page, use the following HTML code:
+**1. Enable GitHub Pages**
 
-    <iframe style="box-sizing:border-box; width:100%; height:100vh;" id="miniPaint" src="https://viliusle.github.io/miniPaint/" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+Go to your repository → **Settings → Pages** and set:
+- Source: **GitHub Actions**
 
-## Build instructions
-See [Wiki > Build instructions](https://github.com/viliusle/miniPaint/wiki/Build-instructions)
+**2. Add repository secrets**
 
-## Wiki
-See [Wiki](https://github.com/viliusle/miniPaint/wiki)
+Go to **Settings → Secrets and variables → Actions → Repository secrets** and add:
 
-## Contributors
-<a align="center" href="https://github.com/viliusle/miniPaint/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=viliusle/miniPaint" />
-</a>
+| Secret name | Value |
+|---|---|
+| `PLACE_API_URL` | e.g. `https://your-memeapi.example.com` |
+| `PLACE_ID` | e.g. `c6a058f9-8ce4-40e0-bd55-8f98d249f7aa` |
+| `PLACE_MEDIA_HOST` | e.g. `https://your-media-host.fra1.digitaloceanspaces.com` |
+
+These are passed as environment variables during the build step so they get compiled into `bundle.js`. They are never written to disk or exposed in the repository.
+
+**3. Push to master**
+
+The workflow triggers automatically on every push to `master`. You can also run it manually from the **Actions** tab using **Run workflow**.
+
+The deployed site will be available at:
+```
+https://madswolf.github.io/PlaceCanvas/
+```
+
+## Authentication
+
+Authentication uses a short-lived temporary password issued by the MemeApi bot:
+
+```
+http://localhost:8080/?tempPassword=<temporary_password>
+```
+
+The app exchanges it for an access token and refresh token, stores them in `localStorage`, and handles silent renewal before expiry. The `tempPassword` is stripped from the URL immediately after use.
+
+If the session expires, reload the page with a fresh `?tempPassword=`.
+
+## Local development
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the dev server with hot reload:
+
+```bash
+npm run server
+```
+
+The dev server opens at `http://localhost:8080` by default.
+
+Build a development bundle (no minification):
+
+```bash
+npm run dev
+```
+
+Build a production bundle:
+
+```bash
+npm run build
+```
+
+Output lands in `dist/bundle.js`.
+
+## Browser support
+
+Chrome, Firefox, Edge, Opera, Safari
 
 ## License
-MIT License
 
-## Support
-Please use the GitHub issues for support, feature requests and bug reports, or contact us by sending an email to www.viliusl@gmail.com.
+MIT

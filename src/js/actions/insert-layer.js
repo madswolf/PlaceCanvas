@@ -55,6 +55,7 @@ export class Insert_layer_action extends Base_action {
 			color: config.COLOR,
 			filters: [],
 			render_function: null,
+			locked: false,
 		};
 
 		// Build data
@@ -180,6 +181,10 @@ export class Insert_layer_action extends Base_action {
 			this.autoresize_canvas_action = null;
 		}
 		if (this.inserted_layer_id) {
+			const idx = config.layers.findIndex(l => l.id === this.inserted_layer_id);
+			if (idx !== -1 && config.layers[idx].locked) {
+				throw new Error('Aborted - Cannot undo insert of locked layer');
+			}
 			config.layers.pop();
 			this.inserted_layer_id = null;
 		}

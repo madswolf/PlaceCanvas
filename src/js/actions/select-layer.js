@@ -22,6 +22,10 @@ export class Select_layer_action extends Base_action {
 		let old_layer = config.layer;
 		let new_layer = app.Layers.get_layer(this.layer_id);
 
+		if (new_layer && new_layer.locked) {
+			throw new Error('Aborted - Cannot select locked layer');
+		}
+
 		if (old_layer !== new_layer) {
 			this.old_layer = old_layer;
 			config.layer = new_layer;
