@@ -19,6 +19,7 @@ config.google_webfonts_key = 'AIzaSyBES3AipG'+'YVYNLtS,Vk-hJ11bbhJ9sTpRbA'.repla
 config.layers = [];
 config.layer = null;
 config.need_render = false;
+config.pinch_active = false;
 config.need_render_changed_params = false; // Set specifically when param change in layer details triggered render
 config.mouse = {};
 config.mouse_lock = null;

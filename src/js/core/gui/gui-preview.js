@@ -52,6 +52,8 @@ class GUI_preview_class {
 		this.mouse_pressed = false;
 		this.mid_drag = false;
 		this.mid_drag_last = { x: 0, y: 0 };
+		this.touch_pan_last = { x: 0, y: 0 };
+		this.touch_pinch_dist = null;
 		this.canvas_preview = null;
 		if (GUI_class != undefined) {
 			this.GUI = GUI_class;
@@ -142,6 +144,63 @@ class GUI_preview_class {
 				_this.mid_drag = false;
 			}
 		}, false);
+
+		// Two-finger pan and pinch-to-zoom on main canvas (1-finger is left to tools)
+		var main_wrapper = document.getElementById('main_wrapper');
+		main_wrapper.addEventListener('touchstart', function (e) {
+			config.pinch_active = e.touches.length >= 2;
+			if (e.touches.length === 2) {
+				e.preventDefault();
+				var t0 = e.touches[0], t1 = e.touches[1];
+				var ddx = t1.clientX - t0.clientX;
+				var ddy = t1.clientY - t0.clientY;
+				_this.touch_pinch_dist = Math.sqrt(ddx * ddx + ddy * ddy);
+				_this.touch_pan_last.x = (t0.clientX + t1.clientX) / 2;
+				_this.touch_pan_last.y = (t0.clientY + t1.clientY) / 2;
+			}
+		}, { passive: false });
+		main_wrapper.addEventListener('touchmove', function (e) {
+			if (e.touches.length === 2) {
+				e.preventDefault();
+				var rect = main_wrapper.getBoundingClientRect();
+				var t0 = e.touches[0], t1 = e.touches[1];
+				var ddx = t1.clientX - t0.clientX;
+				var ddy = t1.clientY - t0.clientY;
+				var newDist = Math.sqrt(ddx * ddx + ddy * ddy);
+				var midX = (t0.clientX + t1.clientX) / 2 - rect.left;
+				var midY = (t0.clientY + t1.clientY) / 2 - rect.top;
+				if (_this.touch_pinch_dist !== null && _this.touch_pinch_dist > 0) {
+					var ratio = newDist / _this.touch_pinch_dist;
+					_this.zoom_data.x = midX;
+					_this.zoom_data.y = midY;
+					config.ZOOM *= ratio;
+					config.ZOOM = Math.round(config.ZOOM * 100) / 100;
+					config.ZOOM = Math.max(config.ZOOM, 0.01);
+					config.ZOOM = Math.min(config.ZOOM, 500);
+					config.need_render = true;
+					document.getElementById("zoom_100").innerHTML = Math.round(config.ZOOM * 100) + '%';
+					document.getElementById("zoom_range").value = config.ZOOM * 100;
+				}
+				_this.touch_pinch_dist = newDist;
+				// pan with midpoint movement
+				var panDx = midX + rect.left - _this.touch_pan_last.x;
+				var panDy = midY + rect.top - _this.touch_pan_last.y;
+				_this.touch_pan_last.x = midX + rect.left;
+				_this.touch_pan_last.y = midY + rect.top;
+				zoomView.move(panDx, panDy);
+			}
+		}, { passive: false });
+		main_wrapper.addEventListener('touchend', function (e) {
+			config.pinch_active = e.touches.length >= 2;
+			if (e.touches.length < 2) {
+				_this.touch_pinch_dist = null;
+			}
+			if (e.touches.length === 1) {
+				_this.touch_pan_last.x = e.touches[0].clientX;
+				_this.touch_pan_last.y = e.touches[0].clientY;
+			}
+		}, { passive: false });
+
 		window.addEventListener('resize', function (e) {
 			//resize
 			config.need_render = true;

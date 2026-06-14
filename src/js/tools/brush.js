@@ -51,12 +51,15 @@ class Brush_class extends Base_tools_class {
 		// collect touch events
 		document.addEventListener('touchstart', function (event) {
 			is_touch = true;
+			if (config.pinch_active) return;
 			_this.dragStart(event);
 		});
 		document.addEventListener('touchmove', function (event) {
+			if (config.pinch_active) return;
 			_this.dragMove(event);
 		});
 		document.addEventListener('touchend', function (event) {
+			if (config.pinch_active) return;
 			_this.dragEnd(event);
 		});
 	}
@@ -149,7 +152,7 @@ class Brush_class extends Base_tools_class {
 				identifier = events[i].identifier;
 			}
 
-			for(var j = 0; i < this.event_links.length; j++){
+			for(var j = 0; j < this.event_links.length; j++){
 				if(this.event_links[j].identifier == identifier){
 					//found link
 					_this.mousemove_action(events[i], this.event_links[j].index);
@@ -183,7 +186,7 @@ class Brush_class extends Base_tools_class {
 				identifier = events[i].identifier;
 			}
 
-			for(var j = 0; i < this.event_links.length; j++){
+			for(var j = 0; j < this.event_links.length; j++){
 				if(this.event_links[j].identifier == identifier){
 					this.event_links.splice(j, 1);
 					break;

@@ -93,14 +93,19 @@ class Base_tools_class {
 		// collect touch info
 		document.addEventListener('touchstart', function (event) {
 			_this.is_touch = true;
+			if (config.pinch_active) {
+				_this.is_drag = false;
+				return;
+			}
 			_this.dragStart(event);
 		});
 		document.addEventListener('touchmove', function (event) {
-			_this.dragMove(event);
+			if (!config.pinch_active) _this.dragMove(event);
 			if (event.target.id === "canvas_minipaint" && !$('.scroll').has($(event.target)).length)
 				event.preventDefault();
 		}, {passive: false});
 		document.addEventListener('touchend', function (event) {
+			if (config.pinch_active) return;
 			_this.dragEnd(event);
 		});
 		
@@ -362,12 +367,15 @@ class Base_tools_class {
 
 		// collect touch events
 		document.addEventListener('touchstart', function (event) {
+			if (config.pinch_active) return;
 			_this.default_dragStart(event);
 		});
 		document.addEventListener('touchmove', function (event) {
+			if (config.pinch_active) return;
 			_this.default_dragMove(event);
 		});
 		document.addEventListener('touchend', function (event) {
+			if (config.pinch_active) return;
 			_this.default_dragEnd(event);
 		});
 	}
