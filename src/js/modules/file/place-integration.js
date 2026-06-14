@@ -26,6 +26,8 @@ class Place_integration_class {
 		this.refetch_interval_id = null;
 		this.refresh_timer_id = null;
 		this.reference_image_data = null; // last-fetched server pixels, used for delta refresh
+		this.price_display_el = null;
+		this.inactivity_timer_id = null;
 	}
 
 	// ── Initialisation ─────────────────────────────────────────────────────────
@@ -188,6 +190,12 @@ class Place_integration_class {
 		const submenu = document.querySelector('.submenu');
 		if (!submenu) return;
 
+		const priceEl = document.createElement('span');
+		priceEl.id = 'place_price_display';
+		priceEl.className = 'place_price_display';
+		submenu.appendChild(priceEl);
+		this.price_display_el = priceEl;
+
 		const btn = document.createElement('button');
 		btn.id = 'submit_place_button';
 		btn.type = 'button';
@@ -195,6 +203,38 @@ class Place_integration_class {
 		btn.textContent = 'Submit to Place';
 		btn.addEventListener('click', () => this.submit());
 		submenu.appendChild(btn);
+
+		this.setup_inactivity_timer();
+	}
+
+	setup_inactivity_timer() {
+		const reset = () => {
+			clearTimeout(this.inactivity_timer_id);
+			this.inactivity_timer_id = setTimeout(() => this.update_price_display(), 5000);
+		};
+		document.addEventListener('mouseup', reset, false);
+		document.addEventListener('touchend', reset, false);
+		document.addEventListener('keyup', (e) => {
+			if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'y')) reset();
+		}, false);
+	}
+
+	async update_price_display() {
+		if (!this.price_display_el || !this.api_url || !this.place_id) return;
+
+		const changedPixels = this.calculate_pixel_changes();
+		if (changedPixels === 0) {
+			this.price_display_el.textContent = '';
+			return;
+		}
+
+		try {
+			const totalCost = await this.get_submission_price(changedPixels);
+			this.price_display_el.textContent =
+				`${changedPixels.toLocaleString()} px · ${totalCost.toFixed(4)} dubloons`;
+		} catch (e) {
+			console.warn('Price preview fetch failed:', e);
+		}
 	}
 
 	// ── Place image loading ────────────────────────────────────────────────────
@@ -470,10 +510,17 @@ class Place_integration_class {
 
 	// ── Submission ─────────────────────────────────────────────────────────────
 
-	async get_pixel_price() {
-		const resp = await fetch(`${this.api_url}/MemePlaces/${this.place_id}/currentprice`);
+	async get_submission_price(pixelCount) {
+		const resp = await this.authed_fetch(
+			`${this.api_url}/MemePlaces/submissions/${this.place_id}/price`,
+			{
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(pixelCount),
+			}
+		);
 		if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-		return resp.json();
+		return resp.json(); // returns double
 	}
 
 	calculate_pixel_changes() {
@@ -519,8 +566,6 @@ class Place_integration_class {
 		}
 
 		try {
-			const priceData     = await this.get_pixel_price();
-			const pricePerPixel = priceData.pricePerPixel;
 			const changedPixels = this.calculate_pixel_changes();
 
 			if (changedPixels === 0) {
@@ -528,10 +573,10 @@ class Place_integration_class {
 				return;
 			}
 
-			const totalCost = (changedPixels * pricePerPixel).toFixed(4);
+			const totalCost = await this.get_submission_price(changedPixels);
 			alertify.confirm(
 				'',
-				`Submit ${changedPixels.toLocaleString()} changed pixel(s) for ${totalCost} tokens?`,
+				`Submit ${changedPixels.toLocaleString()} changed pixel(s) for ${totalCost.toFixed(4)} dubloons?`,
 				() => { this.do_submit(); },
 				() => {}
 			);
